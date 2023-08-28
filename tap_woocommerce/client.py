@@ -168,7 +168,7 @@ class WooCommerceStream(RESTStream):
             )
         if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             self.error_counter += 1
-        elif 500 <= response.status_code < 600 or response.status_code in [429, 403]:
+        elif 500 <= response.status_code < 600 or response.status_code in [429, 403, 104]:
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path}"
