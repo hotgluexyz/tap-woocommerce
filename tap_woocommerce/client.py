@@ -13,6 +13,7 @@ from singer_sdk.authenticators import BasicAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from http.client import RemoteDisconnected
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
 
@@ -50,7 +51,7 @@ class WooCommerceStream(RESTStream):
     records_jsonpath = "$[*]"
     software_names = [SoftwareName.FIREFOX.value]
     operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
-    popularity = [Popularity.UNCOMMON.value]
+    popularity = [Popularity.POPULAR.value]
     user_agents = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
     new_version = None
 
@@ -193,10 +194,11 @@ class WooCommerceStream(RESTStream):
                 RetriableAPIError,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.ConnectionError,
-                ProtocolError
+                ProtocolError,
+                RemoteDisconnected
             ),
             max_tries=10,
-            factor=2,
+            factor=4,
             on_backoff=self.backoff_handler,
         )(func)
         return decorator
