@@ -738,6 +738,11 @@ class CustomersStream(WooCommerceStream):
         ))
     ).to_dict()
 
+    def get_url_params(self, context, next_page_token):
+        params = super().get_url_params(context, next_page_token)
+        params["role"] = "all"
+        return params
+
 class StoreSettingsStream(WooCommerceStream):
     """Define settings stream."""
 
