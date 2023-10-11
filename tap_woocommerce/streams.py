@@ -350,6 +350,12 @@ class OrdersStream(WooCommerceStream):
             th.Property("set_paid", th.BooleanType),
         ),
     ).to_dict()
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        """Return a context dictionary for child streams."""
+        
+        return {
+                "order_id": record["id"],
+            }
 
 
 class CouponsStream(WooCommerceStream):
@@ -755,3 +761,25 @@ class StoreSettingsStream(WooCommerceStream):
         th.Property("value", th.CustomType({"type": ["array", "string"]})),
         th.Property("group_id", th.StringType)
     ).to_dict()
+class OrderNotesStream(WooCommerceStream):
+    """Define settings stream."""
+
+    name = "order_notes"
+    path = "orders/{order_id}/notes"
+    primary_keys = ["id"]
+    parent_stream_type = OrdersStream
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.NumberType),
+        th.Property("order_id", th.NumberType),
+        th.Property("author", th.StringType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("note", th.StringType),
+        th.Property("customer_note", th.BooleanType),
+        th.Property("_links", th.CustomType({"type": ["object", "string"]})),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row['order_id']  = context.get("order_id")
+        return row
