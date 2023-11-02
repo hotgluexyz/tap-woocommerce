@@ -183,8 +183,10 @@ class WooCommerceStream(RESTStream):
             raise FatalAPIError(msg)
         try:
             #Try not to parse 500 response so we can skip the page.
-            if response.status_code !=500:
+            if response.status_code !=500 or self.config.get("ignore_server_errors"):
                 response.json()
+            else:
+                response    
         except:
             raise RetriableAPIError(f"Invalid JSON: {response.text}")
 
