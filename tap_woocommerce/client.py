@@ -184,7 +184,7 @@ class WooCommerceStream(RESTStream):
             )
             raise FatalAPIError(msg)
         try:
-            response.json()   
+            response.json()
         except:
             raise RetriableAPIError(f"Invalid JSON: {response.text}")
 
