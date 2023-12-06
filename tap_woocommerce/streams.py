@@ -85,7 +85,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("rating_count", th.IntegerType),
         th.Property("related_ids", th.ArrayType(th.IntegerType)),
         th.Property("upsell_ids", th.ArrayType(th.IntegerType)),
-        th.Property("cross_sell_ids", th.ArrayType(th.IntegerType)),
+        th.Property("cross_sell_ids", th.CustomType({"type": ["object", "array"]})),
         th.Property("parent_id", th.IntegerType),
         th.Property("purchase_note", th.StringType),
         th.Property(
