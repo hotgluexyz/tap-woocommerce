@@ -14,6 +14,8 @@ from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from http.client import RemoteDisconnected
+from requests.exceptions import ChunkedEncodingError
+
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
 
@@ -197,7 +199,8 @@ class WooCommerceStream(RESTStream):
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.ConnectionError,
                 ProtocolError,
-                RemoteDisconnected
+                RemoteDisconnected,
+                ChunkedEncodingError
             ),
             max_tries=10,
             factor=4,
@@ -218,7 +221,7 @@ class WooCommerceStream(RESTStream):
             else:
                 row[self.replication_key] = datetime(1970,1,1)
         return row
-    
+
     @property
     def timeout(self) -> int:
         """Return the request timeout limit in seconds.
@@ -229,7 +232,7 @@ class WooCommerceStream(RESTStream):
             The request timeout limit as number of seconds.
         """
         return 500
-    
+
     def backoff_handler(self, details) -> None:
         """Adds additional behaviour prior to retry.
 
@@ -245,5 +248,5 @@ class WooCommerceStream(RESTStream):
             "calling function {target} with args {args} and kwargs "
             "{kwargs}".format(**details)
         )
-    
-    
+
+
