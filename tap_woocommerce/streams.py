@@ -44,16 +44,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("total_sales", th.CustomType({"type": ["string", "number"]})),
         th.Property("virtual", th.BooleanType),
         th.Property("downloadable", th.BooleanType),
-        th.Property(
-            "downloads",
-            th.ArrayType(
-                th.ObjectType(
-                    th.Property("id", th.StringType),
-                    th.Property("name", th.StringType),
-                    th.Property("file", th.StringType),
-                )
-            ),
-        ),
+        th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
         th.Property("download_limit", th.IntegerType),
         th.Property("download_expiry", th.IntegerType),
         th.Property("external_url", th.StringType),
@@ -421,7 +412,7 @@ class ProductVarianceStream(WooCommerceStream):
     th.Property("purchasable", th.BooleanType),
     th.Property("virtual", th.BooleanType),
     th.Property("downloadable", th.BooleanType),
-    th.Property("downloads", th.ArrayType(th.StringType)),
+    th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
     th.Property("download_limit", th.IntegerType),
     th.Property("download_expiry", th.IntegerType),
     th.Property("tax_status", th.StringType),
