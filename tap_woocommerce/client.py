@@ -147,9 +147,13 @@ class WooCommerceStream(RESTStream):
             for record in extract_jsonpath(
                 self.records_jsonpath, input=response.json()
             ):
-                record_mod_date = datetime.strptime(
-                    record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
-                )
+                try:
+                    record_mod_date = datetime.strptime(
+                        record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
+                    )
+                except:
+                    #Replication key value is None. Send the record as is.
+                    pass    
                 if record_mod_date > self.start_date:
                     yield record
         else:
