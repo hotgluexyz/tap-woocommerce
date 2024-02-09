@@ -225,6 +225,8 @@ class WooCommerceStream(RESTStream):
                 row[self.replication_key] = row["date_created"]
             else:
                 row[self.replication_key] = datetime(1970,1,1)
+        if "parent_id" in row:
+            row['parent_id'] = int(row['parent_id'])
         return row
 
     @property

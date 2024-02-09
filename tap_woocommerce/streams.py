@@ -77,7 +77,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("related_ids", th.ArrayType(th.IntegerType)),
         th.Property("upsell_ids", th.ArrayType(th.IntegerType)),
         th.Property("cross_sell_ids", th.CustomType({"type": ["object", "array"]})),
-        th.Property("parent_id", th.CustomType({"type": ["number", "string"]})),
+        th.Property("parent_id", th.NumberType),
         th.Property("purchase_note", th.StringType),
         th.Property(
             "categories",
@@ -157,7 +157,7 @@ class OrdersStream(WooCommerceStream):
 
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
-        th.Property("parent_id", th.CustomType({"type": ["number", "string"]})),
+        th.Property("parent_id", th.NumberType),
         th.Property("number", th.StringType),
         th.Property("order_key", th.StringType),
         th.Property("created_via", th.StringType),
@@ -474,7 +474,7 @@ class SubscriptionStream(WooCommerceStream):
     replication_key = "date_modified"
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
-        th.Property("parent_id", th.CustomType({"type": ["number", "string"]})),
+        th.Property("parent_id", th.NumberType),
         th.Property("status", th.StringType),
         th.Property("currency", th.StringType),
         th.Property("version", th.StringType),
