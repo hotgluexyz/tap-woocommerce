@@ -100,7 +100,7 @@ class WooCommerceStream(RESTStream):
             self.new_version = self.get_wc_version()
 
         params: dict = {}
-        params["per_page"] = 100
+        params["per_page"] = self.config.get("per_page",100)
         params["order"] = "asc"
         params["consumer_key"] = self.config.get("consumer_key"),
         params["consumer_secret"] = self.config.get("consumer_secret"),
