@@ -146,12 +146,7 @@ class ProductsStream(WooCommerceStream):
         if record.get("type")=="variable":
             return {
                 "product_id": record["id"],
-            }
-    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
-        if "price" in row:
-            if isinstance(row['price'],bool):
-                row['price'] = str(row['price'])
-        return row    
+            }  
 
 
 class OrdersStream(WooCommerceStream):
