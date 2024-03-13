@@ -227,7 +227,10 @@ class WooCommerceStream(RESTStream):
                 row[self.replication_key] = datetime(1970,1,1)
                 
         if "parent_id" in row:
-            row['parent_id'] = int(row['parent_id'])
+            try:
+                row['parent_id'] = int(row['parent_id'])
+            except:
+                row['parent_id'] = 0
 
         if "price" in row:
             if isinstance(row['price'],bool):
