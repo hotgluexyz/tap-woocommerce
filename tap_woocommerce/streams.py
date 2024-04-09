@@ -33,6 +33,11 @@ class ProductsStream(WooCommerceStream):
         th.Property("short_description", th.StringType),
         th.Property("sku", th.StringType),
         th.Property("brands", th.CustomType({"type": ["array", "string"]})),
+        th.Property("brand", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("name", th.StringType),
+            th.Property("url", th.StringType),
+        )),
         th.Property("price", th.CustomType({"type": ["string", "number"]})),
         th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
         th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
