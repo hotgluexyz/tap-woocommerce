@@ -264,4 +264,13 @@ class WooCommerceStream(RESTStream):
             "{kwargs}".format(**details)
         )
 
-
+    def get_records(self, context: Optional[dict]):
+        sync_invoices = self.config.get("sync_products", True)
+        if self.name == "products" and sync_invoices == False:
+            pass
+        else:
+            for record in self.request_records(context):
+                transformed_record = self.post_process(record, context)
+                if transformed_record is None:
+                    continue
+                yield transformed_record
