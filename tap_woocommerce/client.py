@@ -265,8 +265,8 @@ class WooCommerceStream(RESTStream):
         )
 
     def get_records(self, context: Optional[dict]):
-        sync_invoices = self.config.get("sync_products", True)
-        if self.name == "products" and sync_invoices == False:
+        sync_products = self.config.get("sync_products", True)
+        if self.name == "products" and sync_products == False:
             pass
         else:
             for record in self.request_records(context):
