@@ -1,7 +1,7 @@
 """Stream type classes for tap-woocommerce."""
 
 from singer_sdk import typing as th  # JSON Schema typing helpers
-from typing import Any, Dict, Optional, Union, List, Iterable
+from typing import Optional
 
 from tap_woocommerce.client import WooCommerceStream
 
@@ -33,11 +33,14 @@ class ProductsStream(WooCommerceStream):
         th.Property("short_description", th.StringType),
         th.Property("sku", th.StringType),
         th.Property("brands", th.CustomType({"type": ["array", "string"]})),
-        th.Property("brand", th.ObjectType(
-            th.Property("id", th.IntegerType),
-            th.Property("name", th.StringType),
-            th.Property("url", th.StringType),
-        )),
+        th.Property(
+            "brand",
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("name", th.StringType),
+                th.Property("url", th.StringType),
+            ),
+        ),
         th.Property("price", th.CustomType({"type": ["string", "number"]})),
         th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
         th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
@@ -143,18 +146,23 @@ class ProductsStream(WooCommerceStream):
         th.Property("variations", th.ArrayType(th.IntegerType)),
         th.Property("grouped_products", th.ArrayType(th.IntegerType)),
         th.Property("menu_order", th.IntegerType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+        th.Property(
+            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+        ),
     ).to_dict()
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         """Return a context dictionary for child streams."""
-        if record.get("type")=="variable":
+        if record.get("type") == "variable":
             return {
                 "product_id": record["id"],
-            }  
+            }
+        return {}
 
 
 class OrdersStream(WooCommerceStream):
+    """Define Orders stream."""
+
     name = "orders"
     path = "orders"
     primary_keys = ["id"]
@@ -242,7 +250,9 @@ class OrdersStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
+                                th.Property(
+                                    "id", th.CustomType({"type": ["integer", "string"]})
+                                ),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
@@ -310,7 +320,9 @@ class OrdersStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
+                                th.Property(
+                                    "id", th.CustomType({"type": ["integer", "string"]})
+                                ),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
@@ -329,7 +341,9 @@ class OrdersStream(WooCommerceStream):
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
                     th.Property("code", th.StringType),
-                    th.Property("discount", th.CustomType({"type": ["string", "number"]})),
+                    th.Property(
+                        "discount", th.CustomType({"type": ["string", "number"]})
+                    ),
                     th.Property("discount_tax", th.StringType),
                 ),
             ),
@@ -343,18 +357,20 @@ class OrdersStream(WooCommerceStream):
                     th.Property("total", th.StringType),
                 )
             ),
-            th.Property("set_paid", th.BooleanType),
         ),
+        th.Property("set_paid", th.BooleanType),
     ).to_dict()
+
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         """Return a context dictionary for child streams."""
-        
         return {
-                "order_id": record["id"],
-            }
+            "order_id": record["id"],
+        }
 
 
 class CouponsStream(WooCommerceStream):
+    """Define Coupons stream."""
+
     name = "coupons"
     path = "coupons"
     primary_keys = ["id"]
@@ -391,84 +407,105 @@ class CouponsStream(WooCommerceStream):
 
 
 class ProductVarianceStream(WooCommerceStream):
+    """Define Product Variance stream."""
+
     name = "product_variance"
     path = "products/{product_id}/variations"
     primary_keys = ["id"]
     parent_stream_type = ProductsStream
 
     schema = th.PropertiesList(
-    th.Property("id", th.IntegerType),
-    th.Property("date_created", th.DateTimeType),
-    th.Property("date_created_gmt", th.DateTimeType),
-    th.Property("date_modified", th.DateTimeType),
-    th.Property("date_modified_gmt", th.DateTimeType),
-    th.Property("description", th.StringType),
-    th.Property("permalink", th.StringType),
-    th.Property("sku", th.StringType),
-    th.Property("price", th.CustomType({"type": ["string", "number"]})),
-    th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
-    th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
-    th.Property("date_on_sale_from", th.DateTimeType),
-    th.Property("date_on_sale_from_gmt", th.DateTimeType),
-    th.Property("date_on_sale_to", th.DateTimeType),
-    th.Property("date_on_sale_to_gmt", th.DateTimeType),
-    th.Property("on_sale", th.BooleanType),
-    th.Property("status", th.StringType),
-    th.Property("purchasable", th.BooleanType),
-    th.Property("virtual", th.BooleanType),
-    th.Property("downloadable", th.BooleanType),
-    th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
-    th.Property("download_limit", th.IntegerType),
-    th.Property("download_expiry", th.IntegerType),
-    th.Property("tax_status", th.StringType),
-    th.Property("tax_class", th.StringType),
-    th.Property("manage_stock", th.BooleanType),
-    th.Property("stock_quantity", th.NumberType),
-    th.Property("stock_status", th.StringType),
-    th.Property("backorders", th.StringType),
-    th.Property("backorders_allowed", th.BooleanType),
-    th.Property("backordered", th.BooleanType),
-    th.Property("weight", th.StringType),
-    th.Property("dimensions", th.ObjectType(
-      th.Property("length", th.StringType),
-      th.Property("width", th.StringType),
-      th.Property("height", th.StringType),
-    )),
-    th.Property("shipping_class", th.StringType),
-    th.Property("shipping_class_id", th.IntegerType),
-    th.Property("image", th.ObjectType(
-      th.Property("id", th.IntegerType),
-      th.Property("date_created", th.DateTimeType),
-      th.Property("date_created_gmt", th.DateTimeType),
-      th.Property("date_modified", th.DateTimeType),
-      th.Property("date_modified_gmt", th.DateTimeType),
-      th.Property("src", th.StringType),
-      th.Property("name", th.StringType),
-      th.Property("alt", th.StringType),
-    )),
-    th.Property("attributes", th.ArrayType(th.ObjectType(
-       th.Property( "id", th.IntegerType),
-       th.Property( "name", th.StringType),
-       th.Property( "option", th.StringType),
-      
-    ))),
-    th.Property("menu_order", th.IntegerType),
-    th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
-    th.Property("_links", th.ObjectType(
-      th.Property("self", th.ArrayType(th.ObjectType(
-        
-          th.Property("href", th.StringType),
-        
-      ))))),
-      th.Property("collection", th.ArrayType(th.ObjectType(
-          th.Property("href", th.StringType)
-      ))),
-            th.Property("up", th.ArrayType(th.ObjectType(
-          th.Property("href", th.StringType)
-      ))),
-     
-    
+        th.Property("id", th.IntegerType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("date_modified", th.DateTimeType),
+        th.Property("date_modified_gmt", th.DateTimeType),
+        th.Property("description", th.StringType),
+        th.Property("permalink", th.StringType),
+        th.Property("sku", th.StringType),
+        th.Property("price", th.CustomType({"type": ["string", "number"]})),
+        th.Property("regular_price", th.CustomType({"type": ["string", "number"]})),
+        th.Property("sale_price", th.CustomType({"type": ["string", "number"]})),
+        th.Property("date_on_sale_from", th.DateTimeType),
+        th.Property("date_on_sale_from_gmt", th.DateTimeType),
+        th.Property("date_on_sale_to", th.DateTimeType),
+        th.Property("date_on_sale_to_gmt", th.DateTimeType),
+        th.Property("on_sale", th.BooleanType),
+        th.Property("status", th.StringType),
+        th.Property("purchasable", th.BooleanType),
+        th.Property("virtual", th.BooleanType),
+        th.Property("downloadable", th.BooleanType),
+        th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
+        th.Property("download_limit", th.IntegerType),
+        th.Property("download_expiry", th.IntegerType),
+        th.Property("tax_status", th.StringType),
+        th.Property("tax_class", th.StringType),
+        th.Property("manage_stock", th.BooleanType),
+        th.Property("stock_quantity", th.NumberType),
+        th.Property("stock_status", th.StringType),
+        th.Property("backorders", th.StringType),
+        th.Property("backorders_allowed", th.BooleanType),
+        th.Property("backordered", th.BooleanType),
+        th.Property("weight", th.StringType),
+        th.Property(
+            "dimensions",
+            th.ObjectType(
+                th.Property("length", th.StringType),
+                th.Property("width", th.StringType),
+                th.Property("height", th.StringType),
+            ),
+        ),
+        th.Property("shipping_class", th.StringType),
+        th.Property("shipping_class_id", th.IntegerType),
+        th.Property(
+            "image",
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("date_created", th.DateTimeType),
+                th.Property("date_created_gmt", th.DateTimeType),
+                th.Property("date_modified", th.DateTimeType),
+                th.Property("date_modified_gmt", th.DateTimeType),
+                th.Property("src", th.StringType),
+                th.Property("name", th.StringType),
+                th.Property("alt", th.StringType),
+            ),
+        ),
+        th.Property(
+            "attributes",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.IntegerType),
+                    th.Property("name", th.StringType),
+                    th.Property("option", th.StringType),
+                )
+            ),
+        ),
+        th.Property("menu_order", th.IntegerType),
+        th.Property(
+            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+        ),
+        th.Property(
+            "_links",
+            th.ObjectType(
+                th.Property(
+                    "self",
+                    th.ArrayType(
+                        th.ObjectType(
+                            th.Property("href", th.StringType),
+                        )
+                    ),
+                )
+            ),
+        ),
+        th.Property(
+            "collection",
+            th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+        ),
+        th.Property(
+            "up", th.ArrayType(th.ObjectType(th.Property("href", th.StringType)))
+        ),
     ).to_dict()
+
 
 class SubscriptionStream(WooCommerceStream):
     """Define custom stream."""
@@ -493,30 +530,36 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("total_tax", th.StringType),
         th.Property("customer_id", th.NumberType),
         th.Property("order_key", th.StringType),
-        th.Property("billing", th.ObjectType(
-            th.Property('first_name',th.StringType),
-            th.Property('last_name',th.StringType),
-            th.Property('company',th.StringType),
-            th.Property('address_1',th.StringType),
-            th.Property('address_2',th.StringType),
-            th.Property('city',th.StringType),
-            th.Property('state',th.StringType),
-            th.Property('postcode',th.StringType),
-            th.Property('country',th.StringType),
-            th.Property('email',th.StringType),
-            th.Property('phonephone',th.StringType),
-        )),
-        th.Property("shipping", th.ObjectType(
-            th.Property('first_name',th.StringType),
-            th.Property('last_name',th.StringType),
-            th.Property('company',th.StringType),
-            th.Property('address_1',th.StringType),
-            th.Property('address_2',th.StringType),
-            th.Property('city',th.StringType),
-            th.Property('state',th.StringType),
-            th.Property('postcode',th.StringType),
-            th.Property('country',th.StringType)
-        )),
+        th.Property(
+            "billing",
+            th.ObjectType(
+                th.Property("first_name", th.StringType),
+                th.Property("last_name", th.StringType),
+                th.Property("company", th.StringType),
+                th.Property("address_1", th.StringType),
+                th.Property("address_2", th.StringType),
+                th.Property("city", th.StringType),
+                th.Property("state", th.StringType),
+                th.Property("postcode", th.StringType),
+                th.Property("country", th.StringType),
+                th.Property("email", th.StringType),
+                th.Property("phonephone", th.StringType),
+            ),
+        ),
+        th.Property(
+            "shipping",
+            th.ObjectType(
+                th.Property("first_name", th.StringType),
+                th.Property("last_name", th.StringType),
+                th.Property("company", th.StringType),
+                th.Property("address_1", th.StringType),
+                th.Property("address_2", th.StringType),
+                th.Property("city", th.StringType),
+                th.Property("state", th.StringType),
+                th.Property("postcode", th.StringType),
+                th.Property("country", th.StringType),
+            ),
+        ),
         th.Property("payment_method", th.StringType),
         th.Property("payment_method_title", th.StringType),
         th.Property("customer_ip_address", th.StringType),
@@ -526,51 +569,71 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("date_completed", th.DateTimeType),
         th.Property("date_paid", th.DateTimeType),
         th.Property("number", th.StringType),
-        th.Property("meta_data", th.ArrayType(
-            th.ObjectType(
-                th.Property('id',th.NumberType),
-                th.Property('key',th.StringType),
-                th.Property('value',th.StringType)
-            )
-        )),
-        th.Property('line_items',th.ArrayType(
-            th.ObjectType(
-                th.Property('id',th.NumberType),
-                th.Property('name',th.StringType),
-                th.Property('product_id',th.NumberType),
-                th.Property('variation_id',th.NumberType),
-                th.Property('quantity',th.NumberType),
-                th.Property('tax_class',th.StringType),
-                th.Property('subtotal',th.StringType),
-                th.Property('subtotal_tax',th.StringType),
-                th.Property('total',th.StringType),
-                th.Property('total_tax',th.StringType),
-                th.Property('taxes',th.ArrayType(
-                    th.ObjectType(
-                        th.Property('id',th.CustomType({"type": ["integer", "string"]})),
-                        th.Property('total',th.StringType),
-                        th.Property('subtotal',th.StringType),
-                    )
-                )),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
-                th.Property("sku", th.StringType),
-                th.Property("price", th.NumberType),
-                th.Property("parent_name", th.StringType),
-            )
-        )),
-        th.Property('tax_lines',th.ArrayType(
-            th.ObjectType(
-                th.Property('id',th.NumberType),
-                th.Property('rate_code',th.StringType),
-                th.Property('rate_id',th.NumberType),
-                th.Property('label',th.StringType),
-                th.Property('compound',th.BooleanType),
-                th.Property('tax_total',th.StringType),
-                th.Property('shipping_tax_total ',th.StringType),
-                th.Property('rate_percent ',th.NumberType),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
-            )
-        )),
+        th.Property(
+            "meta_data",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.NumberType),
+                    th.Property("key", th.StringType),
+                    th.Property("value", th.StringType),
+                )
+            ),
+        ),
+        th.Property(
+            "line_items",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.NumberType),
+                    th.Property("name", th.StringType),
+                    th.Property("product_id", th.NumberType),
+                    th.Property("variation_id", th.NumberType),
+                    th.Property("quantity", th.NumberType),
+                    th.Property("tax_class", th.StringType),
+                    th.Property("subtotal", th.StringType),
+                    th.Property("subtotal_tax", th.StringType),
+                    th.Property("total", th.StringType),
+                    th.Property("total_tax", th.StringType),
+                    th.Property(
+                        "taxes",
+                        th.ArrayType(
+                            th.ObjectType(
+                                th.Property(
+                                    "id", th.CustomType({"type": ["integer", "string"]})
+                                ),
+                                th.Property("total", th.StringType),
+                                th.Property("subtotal", th.StringType),
+                            )
+                        ),
+                    ),
+                    th.Property(
+                        "meta_data",
+                        th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+                    ),
+                    th.Property("sku", th.StringType),
+                    th.Property("price", th.NumberType),
+                    th.Property("parent_name", th.StringType),
+                )
+            ),
+        ),
+        th.Property(
+            "tax_lines",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.NumberType),
+                    th.Property("rate_code", th.StringType),
+                    th.Property("rate_id", th.NumberType),
+                    th.Property("label", th.StringType),
+                    th.Property("compound", th.BooleanType),
+                    th.Property("tax_total", th.StringType),
+                    th.Property("shipping_tax_total ", th.StringType),
+                    th.Property("rate_percent ", th.NumberType),
+                    th.Property(
+                        "meta_data",
+                        th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+                    ),
+                )
+            ),
+        ),
         th.Property(
             "shipping_lines",
             th.ArrayType(
@@ -610,7 +673,9 @@ class SubscriptionStream(WooCommerceStream):
                         "taxes",
                         th.ArrayType(
                             th.ObjectType(
-                                th.Property("id", th.CustomType({"type": ["integer", "string"]})),
+                                th.Property(
+                                    "id", th.CustomType({"type": ["integer", "string"]})
+                                ),
                                 th.Property("rate_code", th.StringType),
                                 th.Property("rate_id", th.IntegerType),
                                 th.Property("label", th.StringType),
@@ -629,7 +694,9 @@ class SubscriptionStream(WooCommerceStream):
                 th.ObjectType(
                     th.Property("id", th.IntegerType),
                     th.Property("code", th.StringType),
-                    th.Property("discount", th.CustomType({"type": ["string", "number"]})),
+                    th.Property(
+                        "discount", th.CustomType({"type": ["string", "number"]})
+                    ),
                     th.Property("discount_tax", th.StringType),
                 ),
             ),
@@ -646,29 +713,33 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("end_date_gmt", th.DateTimeType),
         th.Property("resubscribed_from", th.StringType),
         th.Property("resubscribed_subscription", th.StringType),
-        th.Property("removed_line_items", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
-        th.Property('_links',th.ObjectType(
-            th.Property('self',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-            th.Property('collection',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-            th.Property('customer',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-        )),
+        th.Property(
+            "removed_line_items",
+            th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+        ),
+        th.Property(
+            "_links",
+            th.ObjectType(
+                th.Property(
+                    "self",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+                th.Property(
+                    "collection",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+                th.Property(
+                    "customer",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+            ),
+        ),
         th.Property("date_created", th.DateTimeType),
         th.Property("date_modified", th.DateTimeType),
         th.Property("date_created_gmt", th.DateTimeType),
         th.Property("date_modified_gmt", th.DateTimeType),
     ).to_dict()
+
 
 class CustomersStream(WooCommerceStream):
     """Define custom stream."""
@@ -688,7 +759,7 @@ class CustomersStream(WooCommerceStream):
         th.Property("last_name", th.StringType),
         th.Property("role", th.StringType),
         th.Property("username", th.StringType),
-         th.Property(
+        th.Property(
             "billing",
             th.ObjectType(
                 th.Property("first_name", th.StringType),
@@ -718,27 +789,30 @@ class CustomersStream(WooCommerceStream):
                 th.Property("country", th.StringType),
             ),
         ),
-        th.Property('is_paying_customer',th.BooleanType),
-        th.Property('avatar_url',th.StringType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
-        th.Property('_links',th.ObjectType(
-            th.Property('self',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-            th.Property('collection',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-            th.Property('customer',th.ArrayType(
-                th.ObjectType(
-                    th.Property('href',th.StringType)
-                )
-            )),
-        ))
+        th.Property("is_paying_customer", th.BooleanType),
+        th.Property("avatar_url", th.StringType),
+        th.Property(
+            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+        ),
+        th.Property(
+            "_links",
+            th.ObjectType(
+                th.Property(
+                    "self",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+                th.Property(
+                    "collection",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+                th.Property(
+                    "customer",
+                    th.ArrayType(th.ObjectType(th.Property("href", th.StringType))),
+                ),
+            ),
+        ),
     ).to_dict()
+
 
 class StoreSettingsStream(WooCommerceStream):
     """Define settings stream."""
@@ -755,8 +829,10 @@ class StoreSettingsStream(WooCommerceStream):
         th.Property("default", th.StringType),
         th.Property("tip", th.StringType),
         th.Property("value", th.CustomType({"type": ["array", "string"]})),
-        th.Property("group_id", th.StringType)
+        th.Property("group_id", th.StringType),
     ).to_dict()
+
+
 class OrderNotesStream(WooCommerceStream):
     """Define settings stream."""
 
@@ -777,5 +853,8 @@ class OrderNotesStream(WooCommerceStream):
     ).to_dict()
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
-        row['order_id']  = context.get("order_id")
+        """Post-process an Order Notes record to add the order_id."""
+        if context is None:
+            return row
+        row["order_id"] = context.get("order_id")
         return row

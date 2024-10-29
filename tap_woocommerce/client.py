@@ -2,19 +2,23 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, Optional, cast, Callable
+from typing import Any, Dict, Iterable, Optional, Callable
 
-import backoff
-import requests
-from urllib3.exceptions import ProtocolError
-from random_user_agent.user_agent import UserAgent
-from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
-from singer_sdk.authenticators import BasicAuthenticator
-from singer_sdk.helpers.jsonpath import extract_jsonpath
+import backoff  # type: ignore
+import requests  # type: ignore
+from urllib3.exceptions import ProtocolError  # type: ignore
+from random_user_agent.user_agent import UserAgent  # type: ignore
+from random_user_agent.params import (  # type: ignore
+    SoftwareName,
+    OperatingSystem,
+    Popularity,
+)
+from singer_sdk.authenticators import BasicAuthenticator  # type: ignore
+from singer_sdk.helpers.jsonpath import extract_jsonpath  # type: ignore
 from singer_sdk.streams import RESTStream
-from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
-from http.client import RemoteDisconnected
-from requests.exceptions import ChunkedEncodingError
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError  # type: ignore
+from http.client import RemoteDisconnected  # type: ignore
+from requests.exceptions import ChunkedEncodingError  # type: ignore
 
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
@@ -31,6 +35,7 @@ class WooCommerceStream(RESTStream):
         return f"{site_url}/wp-json/wc/v3/"
 
     def get_wc_version(self):
+        """Get the WooCommerce version."""
         if self.config.get("use_old_version"):
             return False
         status_url = f"{self.url_base}system_status"
@@ -39,7 +44,8 @@ class WooCommerceStream(RESTStream):
         try:
             result = self.requests_session.get(url=status_url, headers=headers)
             result_dict = result.json()
-        except:
+        except Exception as e:
+            logging.error(f"Error getting WC version: {e}")
             return True
         if not result_dict.get("environment"):
             return True
@@ -54,7 +60,12 @@ class WooCommerceStream(RESTStream):
     software_names = [SoftwareName.FIREFOX.value]
     operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.MAC.value]
     popularity = [Popularity.POPULAR.value]
-    user_agents = UserAgent(software_names=software_names, operating_systems=operating_systems, popularity = popularity, limit=100)
+    user_agents = UserAgent(
+        software_names=software_names,
+        operating_systems=operating_systems,
+        popularity=popularity,
+        limit=100,
+    )
     new_version = None
 
     @property
@@ -62,8 +73,8 @@ class WooCommerceStream(RESTStream):
         """Return a new authenticator object."""
         return BasicAuthenticator.create_for_stream(
             self,
-            username=self.config.get("consumer_key"),
-            password=self.config.get("consumer_secret"),
+            username=self.config.get("consumer_key", ""),
+            password=self.config.get("consumer_secret", ""),
         )
 
     def get_next_page_token(
@@ -73,7 +84,7 @@ class WooCommerceStream(RESTStream):
         # Get the total pages header
         total_pages = response.headers.get("X-WP-TotalPages")
         if response.status_code >= 400:
-            if self.error_counter>20:
+            if self.error_counter > 20:
                 return None
             previous_token = previous_token or 1
             total_pages = previous_token + 1
@@ -95,33 +106,38 @@ class WooCommerceStream(RESTStream):
         self, context: Optional[dict], next_page_token: Optional[Any]
     ) -> Dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
-
-        if self.new_version == None:
+        if self.new_version is None:
             self.new_version = self.get_wc_version()
 
         params: dict = {}
-        params["per_page"] = self.config.get("per_page",100)
+        params["per_page"] = self.config.get("per_page", 100)
         params["order"] = "asc"
-        params["consumer_key"] = self.config.get("consumer_key"),
-        params["consumer_secret"] = self.config.get("consumer_secret"),
+        params["consumer_key"] = (self.config.get("consumer_key"),)
+        params["consumer_secret"] = (self.config.get("consumer_secret"),)
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
-            self.start_date = self.get_starting_timestamp(context).replace(tzinfo=None)
+            starting_timestamp = self.get_starting_timestamp(context)
+            if starting_timestamp is None:
+                raise ValueError("Start date is not set")
+            self.start_date = starting_timestamp.replace(tzinfo=None)
             if self.new_version:
                 params["modified_after"] = self.start_date.isoformat()
             else:
                 lookup_days = self.config.get("check_modify_date", 60)
-                params["after"] = (self.start_date - timedelta(days=lookup_days)).isoformat()
+                params["after"] = (
+                    self.start_date - timedelta(days=lookup_days)
+                ).isoformat()
         return params
 
     def _request(
         self, prepared_request: requests.PreparedRequest, context: Optional[dict]
     ) -> requests.Response:
-
         # Refresh the User-Agent on every request.
         if not self.config.get("user_agent"):
-            prepared_request.headers["User-Agent"] = self.user_agents.get_random_user_agent()
+            prepared_request.headers[
+                "User-Agent"
+            ] = self.user_agents.get_random_user_agent()
         else:
             prepared_request.headers["User-Agent"] = self.config.get("user_agent")
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
@@ -141,22 +157,21 @@ class WooCommerceStream(RESTStream):
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         """Parse the response and return an iterator of result rows."""
-        if response.status_code>=400 and self.config.get("ignore_server_errors"):
+        if response.status_code >= 400 and self.config.get("ignore_server_errors"):
             return []
         if self.replication_key and not self.new_version:
             for record in extract_jsonpath(
                 self.records_jsonpath, input=response.json()
             ):
                 if record.get(self.replication_key) is not None:
-
                     record_mod_date = datetime.strptime(
                         record[self.replication_key], "%Y-%m-%dT%H:%M:%S"
                     )
-                    
+
                     if record_mod_date > self.start_date:
                         yield record
                 else:
-                    yield record        
+                    yield record
         else:
             yield from extract_jsonpath(self.records_jsonpath, input=response.json())
 
@@ -178,7 +193,11 @@ class WooCommerceStream(RESTStream):
             self.error_counter += 1
             # NOTE: We return because there's no need for further validation
             return
-        elif 500 <= response.status_code < 600 or response.status_code in [429, 403, 104]:
+        elif 500 <= response.status_code < 600 or response.status_code in [
+            429,
+            403,
+            104,
+        ]:
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path} "
@@ -194,7 +213,8 @@ class WooCommerceStream(RESTStream):
             raise FatalAPIError(msg)
         try:
             response.json()
-        except:
+        except Exception as e:
+            logging.error(f"Error parsing JSON: {e}")
             raise RetriableAPIError(f"Invalid JSON: {response.text}")
 
     def request_decorator(self, func: Callable) -> Callable:
@@ -207,7 +227,7 @@ class WooCommerceStream(RESTStream):
                 requests.exceptions.ConnectionError,
                 ProtocolError,
                 RemoteDisconnected,
-                ChunkedEncodingError
+                ChunkedEncodingError,
             ),
             max_tries=10,
             factor=4,
@@ -222,43 +242,53 @@ class WooCommerceStream(RESTStream):
                     child_stream.sync(context=child_context)
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        """Post-process a record to add missing fields or handle errors.
+
+        This method ensures that the record has a valid replication key and
+        handles any errors that occur during the parsing of parent_id.
+        """
         if row.get(self.replication_key) is None:
             if row.get("date_created"):
                 row[self.replication_key] = row["date_created"]
             else:
-                row[self.replication_key] = datetime(1970,1,1)
-                
+                row[self.replication_key] = datetime(1970, 1, 1)
+
         if "parent_id" in row:
             try:
-                row['parent_id'] = int(row['parent_id'])
-            except:
-                row['parent_id'] = 0
+                row["parent_id"] = int(row["parent_id"])
+            except Exception as e:
+                logging.error(f"Error parsing parent_id. Assigning 0: {e}")
+                row["parent_id"] = 0
 
         if "price" in row:
-            if isinstance(row['price'],bool):
-                row['price'] = str(row['price'])    
+            if isinstance(row["price"], bool):
+                row["price"] = str(row["price"])
         return row
 
     @property
     def timeout(self) -> int:
         """Return the request timeout limit in seconds.
 
-        The default timeout is 300 seconds, or as defined by DEFAULT_REQUEST_TIMEOUT.
+        The default timeout is 500 seconds.
 
-        Returns:
-            The request timeout limit as number of seconds.
+        Returns
+        -------
+            int: The request timeout limit in seconds.
+
         """
         return 500
 
     def backoff_handler(self, details) -> None:
-        """Adds additional behaviour prior to retry.
+        """Add additional behaviour prior to retry.
 
         By default will log out backoff details, developers can override
         to extend or change this behaviour.
 
         Args:
+        ----
             details: backoff invocation details
                 https://github.com/litl/backoff#event-handlers
+
         """
         logging.info(
             "Backing off {wait:0.1f} seconds after {tries} tries "
@@ -267,8 +297,22 @@ class WooCommerceStream(RESTStream):
         )
 
     def get_records(self, context: Optional[dict]):
+        """Retrieve records from the WooCommerce API.
+
+        This method fetches records from the WooCommerce API and processes them.
+        If the stream is 'products' and 'sync_products' is set to False in the
+        configuration, it will skip fetching records for products.
+
+        Args:
+            context (Optional[dict]): Stream context or state.
+
+        Yields
+        ------
+            dict: Transformed record from the WooCommerce API.
+
+        """
         sync_products = self.config.get("sync_products", True)
-        if self.name == "products" and sync_products == False:
+        if self.name == "products" and sync_products is False:
             pass
         else:
             for record in self.request_records(context):
