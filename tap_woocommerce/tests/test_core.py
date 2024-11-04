@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 
-from singer_sdk.testing import get_standard_target_tests
+from singer_sdk.testing import get_standard_tap_tests
 
 from tap_woocommerce.tap import TapWooCommerce
 
@@ -12,9 +12,9 @@ SAMPLE_CONFIG: Dict[str, Any] = {
 
 
 # Run standard built-in target tests from the SDK:
-def test_standard_target_tests():
+def test_standard_tap_tests():
     """Run standard target tests from the SDK."""
-    tests = get_standard_target_tests(
+    tests = get_standard_tap_tests(
         TapWooCommerce,
         config=SAMPLE_CONFIG,
     )
