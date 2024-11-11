@@ -1,7 +1,8 @@
 """Stream type classes for tap-woocommerce."""
 
-from singer_sdk import typing as th  # JSON Schema typing helpers
 from typing import Optional
+
+from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_woocommerce.client import WooCommerceStream
 
@@ -52,7 +53,16 @@ class ProductsStream(WooCommerceStream):
         th.Property("total_sales", th.CustomType({"type": ["string", "number"]})),
         th.Property("virtual", th.BooleanType),
         th.Property("downloadable", th.BooleanType),
-        th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
+        th.Property(
+            "downloads",
+            th.CustomType(
+                {
+                    "type": ["object", "array"],
+                    "properties": {},
+                    "additionalProperties": True,
+                }
+            ),
+        ),
         th.Property("download_limit", th.IntegerType),
         th.Property("download_expiry", th.IntegerType),
         th.Property("external_url", th.StringType),
@@ -84,7 +94,16 @@ class ProductsStream(WooCommerceStream):
         th.Property("rating_count", th.IntegerType),
         th.Property("related_ids", th.ArrayType(th.IntegerType)),
         th.Property("upsell_ids", th.ArrayType(th.IntegerType)),
-        th.Property("cross_sell_ids", th.CustomType({"type": ["object", "array"]})),
+        th.Property(
+            "cross_sell_ids",
+            th.CustomType(
+                {
+                    "type": ["object", "array"],
+                    "properties": {},
+                    "additionalProperties": True,
+                }
+            ),
+        ),
         th.Property("parent_id", th.NumberType),
         th.Property("purchase_note", th.StringType),
         th.Property(
@@ -147,7 +166,16 @@ class ProductsStream(WooCommerceStream):
         th.Property("grouped_products", th.ArrayType(th.IntegerType)),
         th.Property("menu_order", th.IntegerType),
         th.Property(
-            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+            "meta_data",
+            th.ArrayType(
+                th.CustomType(
+                    {
+                        "type": ["object", "string"],
+                        "properties": {},
+                        "additionalProperties": True,
+                    }
+                )
+            ),
         ),
     ).to_dict()
 
@@ -402,7 +430,16 @@ class CouponsStream(WooCommerceStream):
         th.Property("minimum_amount", th.StringType),
         th.Property("maximum_amount", th.StringType),
         th.Property("email_restrictions", th.ArrayType(th.StringType)),
-        th.Property("used_by", th.CustomType({"type": ["array", "object", "string"]})),
+        th.Property(
+            "used_by",
+            th.CustomType(
+                {
+                    "type": ["array", "object", "string"],
+                    "properties": {},
+                    "additionalProperties": True,
+                }
+            ),
+        ),
     ).to_dict()
 
 
@@ -435,7 +472,16 @@ class ProductVarianceStream(WooCommerceStream):
         th.Property("purchasable", th.BooleanType),
         th.Property("virtual", th.BooleanType),
         th.Property("downloadable", th.BooleanType),
-        th.Property("downloads", th.CustomType({"type": ["object", "array"]})),
+        th.Property(
+            "downloads",
+            th.CustomType(
+                {
+                    "type": ["object", "array"],
+                    "properties": {},
+                    "additionalProperties": True,
+                }
+            ),
+        ),
         th.Property("download_limit", th.IntegerType),
         th.Property("download_expiry", th.IntegerType),
         th.Property("tax_status", th.StringType),
@@ -482,7 +528,16 @@ class ProductVarianceStream(WooCommerceStream):
         ),
         th.Property("menu_order", th.IntegerType),
         th.Property(
-            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+            "meta_data",
+            th.ArrayType(
+                th.CustomType(
+                    {
+                        "type": ["object", "string"],
+                        "properties": {},
+                        "additionalProperties": True,
+                    }
+                )
+            ),
         ),
         th.Property(
             "_links",
@@ -607,7 +662,15 @@ class SubscriptionStream(WooCommerceStream):
                     ),
                     th.Property(
                         "meta_data",
-                        th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+                        th.ArrayType(
+                            th.CustomType(
+                                {
+                                    "type": ["object", "string"],
+                                    "properties": {},
+                                    "additionalProperties": True,
+                                }
+                            )
+                        ),
                     ),
                     th.Property("sku", th.StringType),
                     th.Property("price", th.NumberType),
@@ -629,7 +692,15 @@ class SubscriptionStream(WooCommerceStream):
                     th.Property("rate_percent ", th.NumberType),
                     th.Property(
                         "meta_data",
-                        th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+                        th.ArrayType(
+                            th.CustomType(
+                                {
+                                    "type": ["object", "string"],
+                                    "properties": {},
+                                    "additionalProperties": True,
+                                }
+                            )
+                        ),
                     ),
                 )
             ),
@@ -715,7 +786,15 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("resubscribed_subscription", th.StringType),
         th.Property(
             "removed_line_items",
-            th.ArrayType(th.CustomType({"type": ["object", "string"]})),
+            th.ArrayType(
+                th.CustomType(
+                    {
+                        "type": ["object", "string"],
+                        "properties": {},
+                        "additionalProperties": True,
+                    }
+                )
+            ),
         ),
         th.Property(
             "_links",
@@ -792,7 +871,16 @@ class CustomersStream(WooCommerceStream):
         th.Property("is_paying_customer", th.BooleanType),
         th.Property("avatar_url", th.StringType),
         th.Property(
-            "meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))
+            "meta_data",
+            th.ArrayType(
+                th.CustomType(
+                    {
+                        "type": ["object", "string"],
+                        "properties": {},
+                        "additionalProperties": True,
+                    }
+                )
+            ),
         ),
         th.Property(
             "_links",
@@ -849,7 +937,16 @@ class OrderNotesStream(WooCommerceStream):
         th.Property("date_created_gmt", th.DateTimeType),
         th.Property("note", th.StringType),
         th.Property("customer_note", th.BooleanType),
-        th.Property("_links", th.CustomType({"type": ["object", "string"]})),
+        th.Property(
+            "_links",
+            th.CustomType(
+                {
+                    "type": ["object", "string"],
+                    "properties": {},
+                    "additionalProperties": True,
+                }
+            ),
+        ),
     ).to_dict()
 
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
