@@ -1,6 +1,5 @@
 """Tests standard target features using the built-in SDK tests library."""
 
-import json
 import typing as t
 
 import pytest
@@ -8,29 +7,14 @@ from singer_sdk.exceptions import AbortedSyncFailedException, AbortedSyncPausedE
 from singer_sdk.testing import _get_tap_catalog
 
 from tap_woocommerce.tap import TapWooCommerce
-from tap_woocommerce.tests.utils import compare_dicts
+from tap_woocommerce.tests.utils import compare_dicts, load_json_from_s3
 
-with open(
-    "path/config.json",
-    "r",
-) as file:
-    config = json.load(file)
+# Load configurations from S3
+S3_BUCKET = 'tests/tap-woocommerce/default'
 
-SAMPLE_CONFIG = config
-
-with open("path/state.json", "r") as file:
-    state = json.load(file)
-
-SAMPLE_STATE = state
-
-
-with open(
-    "path/catalog.json",
-    "r",
-) as file:
-    catalog = json.load(file)
-
-SAMPLE_CATALOG = catalog
+SAMPLE_CONFIG = load_json_from_s3(S3_BUCKET, 'config.json')
+SAMPLE_STATE = load_json_from_s3(S3_BUCKET, 'state.json')
+SAMPLE_CATALOG = load_json_from_s3(S3_BUCKET, 'catalog.json')
 
 
 class TapWrapper:
