@@ -11,21 +11,21 @@ from tap_woocommerce.tap import TapWooCommerce
 from tap_woocommerce.tests.utils import compare_dicts
 
 with open(
-    f"path/config.json",
+    "path/config.json",
     "r",
 ) as file:
     config = json.load(file)
 
 SAMPLE_CONFIG = config
 
-with open(f"path/state.json", "r") as file:
+with open("path/state.json", "r") as file:
     state = json.load(file)
 
 SAMPLE_STATE = state
 
 
 with open(
-    f"path/catalog.json",
+    "path/catalog.json",
     "r",
 ) as file:
     catalog = json.load(file)
