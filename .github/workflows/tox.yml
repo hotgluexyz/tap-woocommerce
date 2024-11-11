@@ -22,9 +22,14 @@ jobs:
 
     - name: Install dependencies
       run: |
+        echo "Upgrading pip..."
         python -m pip install --upgrade pip
+        echo "Installing poetry..."
         pip install poetry  # Ensure poetry is installed as it's used in tox.ini
+        echo "Installing project dependencies with poetry..."
         poetry install --no-root  # Install all dependencies including dev-dependencies
 
     - name: Run Tox
-      run: tox
+      run: |
+        echo "Running Tox tests..."
+        poetry run tox
