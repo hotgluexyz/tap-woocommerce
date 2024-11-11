@@ -55,19 +55,25 @@ def discovery() -> None:
 
 @pytest.fixture(scope="module")  # or "session" for sharing across the entire test run
 def tap_instance():
-    print("Generating catalog...")
-    catalog = discovery()
+    if SAMPLE_CONFIG and SAMPLE_STATE:
+        print("Generating catalog...")
+        catalog = discovery()
 
-    print("Instantiating Tap...")
-    instance = TapWooCommerce(
-        config=SAMPLE_CONFIG, parse_env_config=True, catalog=catalog, state=SAMPLE_STATE
-    )
-    yield TapWrapper(instance)
+        print("Instantiating Tap...")
+        instance = TapWooCommerce(
+            config=SAMPLE_CONFIG, parse_env_config=True, catalog=catalog, state=SAMPLE_STATE
+        )
+        yield TapWrapper(instance)
+    else:
+        raise ValueError("SAMPLE_CONFIG or SAMPLE_STATE is not set")
 
 
 def test_catalog(tap_instance):
-    catalog = tap_instance.instance.catalog_dict
-    assert compare_dicts(catalog, SAMPLE_CATALOG)
+    if SAMPLE_CATALOG:
+        catalog = tap_instance.instance.catalog_dict
+        assert compare_dicts(catalog, SAMPLE_CATALOG)
+    else:
+        raise ValueError("SAMPLE_CATALOG is not set")
 
 
 def test_cli_prints(tap_instance) -> None:

@@ -1,3 +1,4 @@
+import os
 import json
 import boto3
 
@@ -24,7 +25,6 @@ def load_json_from_s3(bucket_name, file_key, logger=None):
     
     # Initialize a dictionary to store AWS credentials and bucket information
     source_bucket = {}
-    import os
 
     # Attempt to load AWS credentials from a local configuration file
     try:
@@ -42,7 +42,8 @@ def load_json_from_s3(bucket_name, file_key, logger=None):
     # Populate the source_bucket dictionary with AWS credentials and bucket name
     source_bucket['aws_access_key_id'] = config.get("aws_access_key_id")
     source_bucket['aws_secret_access_key'] = config.get("aws_secret_access_key")
-    source_bucket['bucket_name'] = 'tests/tap-woocommerce/default'
+    source_bucket['bucket_name'] = 'tests'
+    source_bucket['prefix'] = 'tap-woocommerce/default'
 
     # Create a new session with the AWS credentials
     iam_session = boto3.Session(
@@ -51,17 +52,33 @@ def load_json_from_s3(bucket_name, file_key, logger=None):
     )
     logger.info("AWS session created successfully.")
 
+    json_content = None
+
     # Use the session to create an S3 client
     iam_s3_client = iam_session.client("s3")
     logger.info("S3 client initialized.")
 
-    # Retrieve the specified object from the S3 bucket
-    response = iam_s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    logger.info("Retrieved object from S3 bucket.")
+    # List all objects under the specified prefix
+    response = iam_s3_client.list_objects_v2(Bucket=source_bucket['bucket_name'], Prefix=source_bucket['prefix'])
+    logger.info(f"Listed objects under the specified path: {source_bucket['bucket_name']}/{source_bucket['prefix']}")
 
-    # Read the object's content, decode it from bytes to a string, and parse it as JSON
-    json_content = json.loads(response['Body'].read().decode('utf-8'))
-    logger.info("JSON content loaded and parsed successfully.")
+    # Check if there are any contents
+    if 'Contents' in response:
+        # Iterate over each object in the response
+        for obj in response['Contents']:
+            # Extract the object key (full path)
+            object_key = obj['Key']
+            if object_key.endswith(file_key):
+                # Retrieve the specified object from the S3 bucket
+                response = iam_s3_client.get_object(Bucket=source_bucket['bucket_name'], Key=object_key)
+                logger.info(f"Retrieved object from S3 bucket: {source_bucket['bucket_name']}/{object_key}")
+
+                # Read the object's content, decode it from bytes to a string, and parse it as JSON
+                json_content = json.loads(response['Body'].read().decode('utf-8'))
+                logger.info("JSON content loaded and parsed successfully.")
+                break
+    else:
+        logger.error("No contents found under the specified path: %s/%s", source_bucket['bucket_name'], source_bucket['prefix'])
 
     # Return the parsed JSON content
     return json_content
