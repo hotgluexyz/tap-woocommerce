@@ -4,16 +4,17 @@ from typing import List
 
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
+from singer_sdk.exceptions import FatalAPIError, MaxRecordsLimitException
 
 from tap_woocommerce.streams import (
-    ProductsStream,
-    OrdersStream,
     CouponsStream,
-    ProductVarianceStream,
-    SubscriptionStream,
     CustomersStream,
-    StoreSettingsStream,
     OrderNotesStream,
+    OrdersStream,
+    ProductsStream,
+    ProductVarianceStream,
+    StoreSettingsStream,
+    SubscriptionStream,
 )
 
 STREAM_TYPES = [

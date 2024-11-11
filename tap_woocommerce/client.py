@@ -2,23 +2,20 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, Optional, Callable
+from http.client import RemoteDisconnected  # type: ignore
+from typing import Any, Callable, Dict, Iterable, Optional
 
 import backoff  # type: ignore
 import requests  # type: ignore
-from urllib3.exceptions import ProtocolError  # type: ignore
+from random_user_agent.params import OperatingSystem  # type: ignore
+from random_user_agent.params import Popularity, SoftwareName
 from random_user_agent.user_agent import UserAgent  # type: ignore
-from random_user_agent.params import (  # type: ignore
-    SoftwareName,
-    OperatingSystem,
-    Popularity,
-)
+from requests.exceptions import ChunkedEncodingError  # type: ignore
 from singer_sdk.authenticators import BasicAuthenticator  # type: ignore
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError  # type: ignore
 from singer_sdk.helpers.jsonpath import extract_jsonpath  # type: ignore
 from singer_sdk.streams import RESTStream
-from singer_sdk.exceptions import FatalAPIError, RetriableAPIError  # type: ignore
-from http.client import RemoteDisconnected  # type: ignore
-from requests.exceptions import ChunkedEncodingError  # type: ignore
+from urllib3.exceptions import ProtocolError  # type: ignore
 
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
@@ -135,9 +132,9 @@ class WooCommerceStream(RESTStream):
     ) -> requests.Response:
         # Refresh the User-Agent on every request.
         if not self.config.get("user_agent"):
-            prepared_request.headers[
-                "User-Agent"
-            ] = self.user_agents.get_random_user_agent()
+            prepared_request.headers["User-Agent"] = (
+                self.user_agents.get_random_user_agent()
+            )
         else:
             prepared_request.headers["User-Agent"] = self.config.get("user_agent")
         response = self.requests_session.send(prepared_request, timeout=self.timeout)
