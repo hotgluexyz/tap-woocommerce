@@ -30,6 +30,9 @@ jobs:
         poetry install --no-root  # Install all dependencies including dev-dependencies
 
     - name: Run Tox
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.CONNECTOR_TESTS_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.CONNECTOR_TESTS_SECRET_ACCESS_KEY }}
       run: |
         echo "Running Tox tests..."
         poetry run tox

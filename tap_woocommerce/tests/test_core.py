@@ -10,11 +10,11 @@ from tap_woocommerce.tap import TapWooCommerce
 from tap_woocommerce.tests.utils import compare_dicts, load_json_from_s3
 
 # Load configurations from S3
-S3_BUCKET = 'tests/tap-woocommerce/default'
+S3_PREFIX = 'tap-woocommerce/default'
 
-SAMPLE_CONFIG = load_json_from_s3(S3_BUCKET, 'config.json')
-SAMPLE_STATE = load_json_from_s3(S3_BUCKET, 'state.json')
-SAMPLE_CATALOG = load_json_from_s3(S3_BUCKET, 'catalog.json')
+SAMPLE_CONFIG = load_json_from_s3(S3_PREFIX, 'config.json')
+SAMPLE_STATE = load_json_from_s3(S3_PREFIX, 'state.json')
+SAMPLE_CATALOG = load_json_from_s3(S3_PREFIX, 'catalog.json')
 
 
 class TapWrapper:

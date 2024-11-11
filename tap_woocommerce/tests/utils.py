@@ -5,12 +5,13 @@ import boto3
 
 import logging
 
-def load_json_from_s3(bucket_name, file_key, logger=None):
+def load_json_from_s3(prefix, file_key, logger=None):
     """
     Load a JSON file from an S3 bucket and return its contents as a Python dictionary.
 
     Args:
         bucket_name (str): The name of the S3 bucket where the file is stored.
+        prefix (str): The prefix of the files within the S3 bucket.
         file_key (str): The key (path) of the file within the S3 bucket.
         logger (logging.Logger, optional): A logger instance to use for logging. If not provided, a default logger will be used.
 
@@ -20,8 +21,6 @@ def load_json_from_s3(bucket_name, file_key, logger=None):
     if logger is None:
         logger = logging.getLogger(__name__)
         logging.basicConfig(level=logging.INFO)
-
-    logger.info("Loading JSON from S3 bucket: %s, file key: %s", bucket_name, file_key)
     
     # Initialize a dictionary to store AWS credentials and bucket information
     source_bucket = {}
@@ -34,16 +33,17 @@ def load_json_from_s3(bucket_name, file_key, logger=None):
     except FileNotFoundError:
         # If the configuration file is not found, attempt to load credentials from environment variables
         config = {
-            'aws_access_key_id': os.getenv('CONNECTOR_TESTS_ACCESS_KEY'),
-            'aws_secret_access_key': os.getenv('CONNECTOR_TESTS_SECRET_ACCESS_KEY'),
+            'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+            'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
         }
+        print(config)
         logger.warning("Local configuration file not found. Loaded AWS credentials from environment variables.")
 
     # Populate the source_bucket dictionary with AWS credentials and bucket name
     source_bucket['aws_access_key_id'] = config.get("aws_access_key_id")
     source_bucket['aws_secret_access_key'] = config.get("aws_secret_access_key")
     source_bucket['bucket_name'] = 'tests'
-    source_bucket['prefix'] = 'tap-woocommerce/default'
+    source_bucket['prefix'] = prefix
 
     # Create a new session with the AWS credentials
     iam_session = boto3.Session(
