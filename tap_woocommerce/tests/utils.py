@@ -42,7 +42,7 @@ def load_json_from_s3(prefix, file_key, logger=None):
     # Populate the source_bucket dictionary with AWS credentials and bucket name
     source_bucket['aws_access_key_id'] = config.get("aws_access_key_id")
     source_bucket['aws_secret_access_key'] = config.get("aws_secret_access_key")
-    source_bucket['bucket_name'] = 'tests'
+    source_bucket['bucket_name'] = 'hotglue.connector-tests'
     source_bucket['prefix'] = prefix
 
     # Create a new session with the AWS credentials
