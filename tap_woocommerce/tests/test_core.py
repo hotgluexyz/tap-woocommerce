@@ -1,6 +1,5 @@
 """Tests standard target features using the built-in SDK tests library."""
 
-import json
 import typing as t
 
 import pytest
@@ -8,29 +7,14 @@ from singer_sdk.exceptions import AbortedSyncFailedException, AbortedSyncPausedE
 from singer_sdk.testing import _get_tap_catalog
 
 from tap_woocommerce.tap import TapWooCommerce
-from tap_woocommerce.tests.utils import compare_dicts
+from tap_woocommerce.tests.utils import compare_dicts, load_json_from_s3
 
-with open(
-    "path/config.json",
-    "r",
-) as file:
-    config = json.load(file)
+# Load configurations from S3
+S3_PREFIX = "tap-woocommerce/default"
 
-SAMPLE_CONFIG = config
-
-with open("path/state.json", "r") as file:
-    state = json.load(file)
-
-SAMPLE_STATE = state
-
-
-with open(
-    "path/catalog.json",
-    "r",
-) as file:
-    catalog = json.load(file)
-
-SAMPLE_CATALOG = catalog
+SAMPLE_CONFIG = load_json_from_s3(S3_PREFIX, "config.json")
+SAMPLE_STATE = load_json_from_s3(S3_PREFIX, "state.json")
+SAMPLE_CATALOG = load_json_from_s3(S3_PREFIX, "catalog.json")
 
 
 class TapWrapper:
@@ -64,26 +48,35 @@ class TapWrapper:
         )
 
 
-def discovery() -> None:
+def discovery(config) -> None:
     catalog = _get_tap_catalog(TapWooCommerce, config or {}, select_all=False)
     return catalog
 
 
 @pytest.fixture(scope="module")  # or "session" for sharing across the entire test run
 def tap_instance():
-    print("Generating catalog...")
-    catalog = discovery()
+    if SAMPLE_CONFIG and SAMPLE_STATE:
+        print("Generating catalog...")
+        catalog = discovery(SAMPLE_CONFIG)
 
-    print("Instantiating Tap...")
-    instance = TapWooCommerce(
-        config=SAMPLE_CONFIG, parse_env_config=True, catalog=catalog, state=SAMPLE_STATE
-    )
-    yield TapWrapper(instance)
+        print("Instantiating Tap...")
+        instance = TapWooCommerce(
+            config=SAMPLE_CONFIG,
+            parse_env_config=True,
+            catalog=catalog,
+            state=SAMPLE_STATE,
+        )
+        yield TapWrapper(instance)
+    else:
+        raise ValueError("SAMPLE_CONFIG or SAMPLE_STATE is not set")
 
 
 def test_catalog(tap_instance):
-    catalog = tap_instance.instance.catalog_dict
-    assert compare_dicts(catalog, SAMPLE_CATALOG)
+    if SAMPLE_CATALOG:
+        catalog = tap_instance.instance.catalog_dict
+        assert compare_dicts(catalog, SAMPLE_CATALOG)
+    else:
+        raise ValueError("SAMPLE_CATALOG is not set")
 
 
 def test_cli_prints(tap_instance) -> None:
@@ -97,7 +90,8 @@ def test_cli_prints(tap_instance) -> None:
 def test_stream_connections(tap_instance) -> None:
     # Initialize with basic config
     tap1 = tap_instance
-    # pass the streams to be tested, if no stream_names passed run_connection_test will sync all streams
+    # pass the streams to be tested, if no stream_names
+    # passed run_connection_test will sync all streams
     stream_names = ["product_variance", "products"]  # child stream, normal stream
     tap1.run_connection_test(stream_names)
 
