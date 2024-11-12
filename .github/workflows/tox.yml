@@ -34,5 +34,5 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.CONNECTOR_TESTS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.CONNECTOR_TESTS_SECRET_ACCESS_KEY }}
       run: |
-        echo "Running Tox tests..."
+        echo "Running Tox tests... $AWS_ACCESS_KEY_ID"
         poetry run tox
