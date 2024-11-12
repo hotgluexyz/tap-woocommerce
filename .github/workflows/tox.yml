@@ -29,10 +29,23 @@ jobs:
         echo "Installing project dependencies with poetry..."
         poetry install --no-root  # Install all dependencies including dev-dependencies
 
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.CONNECTOR_TESTS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.CONNECTOR_TESTS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # Change to your desired region
+
     - name: Run Tox
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.CONNECTOR_TESTS_ACCESS_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.CONNECTOR_TESTS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.CONNECTOR_TESTS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.CONNECTOR_TESTS_SECRET_ACCESS_KEY }}
       run: |
         echo "Running Tox tests... $AWS_ACCESS_KEY_ID"
         poetry run tox
+
+    - name: Upload coverage.xml to S3
+      run: |
+        echo "Uploading coverage.xml to S3..."
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        aws s3 cp coverage.xml s3://hotglue.connector-tests/${{ github.repository }}/metrics/coverage-${TIMESTAMP}.xml
