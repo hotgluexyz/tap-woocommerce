@@ -48,7 +48,7 @@ class TapWrapper:
         )
 
 
-def discovery() -> None:
+def discovery(config) -> None:
     catalog = _get_tap_catalog(TapWooCommerce, config or {}, select_all=False)
     return catalog
 
@@ -57,7 +57,7 @@ def discovery() -> None:
 def tap_instance():
     if SAMPLE_CONFIG and SAMPLE_STATE:
         print("Generating catalog...")
-        catalog = discovery()
+        catalog = discovery(SAMPLE_CONFIG)
 
         print("Instantiating Tap...")
         instance = TapWooCommerce(
