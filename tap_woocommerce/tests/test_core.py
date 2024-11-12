@@ -10,11 +10,11 @@ from tap_woocommerce.tap import TapWooCommerce
 from tap_woocommerce.tests.utils import compare_dicts, load_json_from_s3
 
 # Load configurations from S3
-S3_PREFIX = 'tap-woocommerce/default'
+S3_PREFIX = "tap-woocommerce/default"
 
-SAMPLE_CONFIG = load_json_from_s3(S3_PREFIX, 'config.json')
-SAMPLE_STATE = load_json_from_s3(S3_PREFIX, 'state.json')
-SAMPLE_CATALOG = load_json_from_s3(S3_PREFIX, 'catalog.json')
+SAMPLE_CONFIG = load_json_from_s3(S3_PREFIX, "config.json")
+SAMPLE_STATE = load_json_from_s3(S3_PREFIX, "state.json")
+SAMPLE_CATALOG = load_json_from_s3(S3_PREFIX, "catalog.json")
 
 
 class TapWrapper:
@@ -61,7 +61,10 @@ def tap_instance():
 
         print("Instantiating Tap...")
         instance = TapWooCommerce(
-            config=SAMPLE_CONFIG, parse_env_config=True, catalog=catalog, state=SAMPLE_STATE
+            config=SAMPLE_CONFIG,
+            parse_env_config=True,
+            catalog=catalog,
+            state=SAMPLE_STATE,
         )
         yield TapWrapper(instance)
     else:
@@ -87,7 +90,8 @@ def test_cli_prints(tap_instance) -> None:
 def test_stream_connections(tap_instance) -> None:
     # Initialize with basic config
     tap1 = tap_instance
-    # pass the streams to be tested, if no stream_names passed run_connection_test will sync all streams
+    # pass the streams to be tested, if no stream_names
+    # passed run_connection_test will sync all streams
     stream_names = ["product_variance", "products"]  # child stream, normal stream
     tap1.run_connection_test(stream_names)
 
