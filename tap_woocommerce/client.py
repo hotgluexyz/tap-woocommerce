@@ -1,5 +1,7 @@
 """REST client handling, including WooCommerceStream base class."""
 
+import copy
+import json
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Iterable, Optional, cast, Callable
@@ -221,6 +223,26 @@ class WooCommerceStream(RESTStream):
                 if child_context:
                     child_stream.sync(context=child_context)
 
+    def process_meta_data(self, row: dict) -> dict:
+        new_row = copy.deepcopy(row)
+        for key, value in row.items():
+            if key == "meta_data":
+                for index, meta_data in enumerate(value):
+                    if type(meta_data["value"]) == str:
+                        continue
+                    elif meta_data["value"] is not None:
+                        try:
+                            new_row[key][index]["value"] = json.dumps(meta_data["value"])
+                        except:
+                            new_row[key][index]["value"] = str(meta_data["value"])
+                    elif meta_data["value"] is None:
+                        new_row[meta_data["key"]] = ""
+            elif type(value) == list and value:
+                new_row[key] = [self.process_meta_data(item) for item in value]
+            elif type(value) == dict and any(type(v) == dict for v in value.values()):
+                new_row[key] = self.process_meta_data(value)
+        return copy.deepcopy(new_row)
+
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         if row.get(self.replication_key) is None:
             if row.get("date_created"):
@@ -236,8 +258,9 @@ class WooCommerceStream(RESTStream):
 
         if "price" in row:
             if isinstance(row['price'],bool):
-                row['price'] = str(row['price'])    
-        return row
+                row['price'] = str(row['price'])
+                
+        return self.process_meta_data(row)
 
     @property
     def timeout(self) -> int:

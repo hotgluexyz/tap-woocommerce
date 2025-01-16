@@ -160,6 +160,17 @@ class OrdersStream(WooCommerceStream):
     primary_keys = ["id"]
     replication_key = "date_modified"
 
+    meta_data_property = th.Property(
+            "meta_data",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.IntegerType),
+                    th.Property("key", th.StringType),
+                    th.Property("value", th.StringType),
+                )
+            ),
+        )
+    
     schema = th.PropertiesList(
         th.Property("id", th.IntegerType),
         th.Property("parent_id", th.NumberType),
@@ -268,6 +279,7 @@ class OrdersStream(WooCommerceStream):
                     th.Property("compound", th.BooleanType),
                     th.Property("tax_total", th.StringType),
                     th.Property("shipping_tax_total", th.StringType),
+                    meta_data_property,
                 )
             ),
         ),
@@ -293,6 +305,7 @@ class OrdersStream(WooCommerceStream):
                             )
                         ),
                     ),
+                    meta_data_property,
                 )
             ),
         ),
@@ -320,6 +333,7 @@ class OrdersStream(WooCommerceStream):
                             )
                         ),
                     ),
+                    meta_data_property,
                 )
             ),
         ),
@@ -331,6 +345,7 @@ class OrdersStream(WooCommerceStream):
                     th.Property("code", th.StringType),
                     th.Property("discount", th.CustomType({"type": ["string", "number"]})),
                     th.Property("discount_tax", th.StringType),
+                    meta_data_property,
                 ),
             ),
         ),
@@ -345,6 +360,7 @@ class OrdersStream(WooCommerceStream):
             ),
             th.Property("set_paid", th.BooleanType),
         ),
+        meta_data_property,
     ).to_dict()
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         """Return a context dictionary for child streams."""
