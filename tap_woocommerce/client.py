@@ -238,7 +238,13 @@ class WooCommerceStream(RESTStream):
                     elif meta_data["value"] is None:
                         new_row[meta_data["key"]] = ""
             elif type(value) == list and value:
-                new_row[key] = [self.process_meta_data(item) for item in value]
+                new_list = []
+                for item in value:
+                    if type(item) == dict:
+                        new_list.append(self.process_meta_data(item))
+                    else:
+                        new_list.append(item)
+                new_row[key] = new_list
             elif type(value) == dict and any(type(v) == dict for v in value.values()):
                 new_row[key] = self.process_meta_data(value)
         return copy.deepcopy(new_row)
