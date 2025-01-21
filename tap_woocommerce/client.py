@@ -228,7 +228,7 @@ class WooCommerceStream(RESTStream):
         for key, value in row.items():
             if key == "meta_data":
                 for index, meta_data in enumerate(value):
-                    if type(meta_data["value"]) == str:
+                    if not meta_data or type(meta_data["value"]) == str:
                         continue
                     elif meta_data["value"] is not None:
                         try:
