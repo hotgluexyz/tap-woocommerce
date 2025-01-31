@@ -795,3 +795,129 @@ class OrderNotesStream(WooCommerceStream):
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row['order_id']  = context.get("order_id")
         return row
+
+class OrdersRefundsStream(WooCommerceStream):
+    """Define refunds stream."""
+    
+    name = "orders_refunds"
+    path = "orders/{order_id}/refunds"
+    primary_keys = ["id"]
+    parent_stream_type = OrdersStream
+    replication_key = None
+    
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("order_id", th.IntegerType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("amount", th.StringType),
+        th.Property("reason", th.StringType),
+        th.Property("refunded_by", th.IntegerType),
+        th.Property("refunded_payment", th.BooleanType),
+        th.Property("meta_data", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("key", th.StringType),
+                th.Property("value", th.StringType),
+            )
+        )),
+        th.Property("line_items", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("name", th.StringType),
+                th.Property("product_id", th.IntegerType),
+                th.Property("variation_id", th.IntegerType),
+                th.Property("quantity", th.IntegerType),
+                th.Property("tax_class", th.StringType),
+                th.Property("subtotal", th.StringType),
+                th.Property("subtotal_tax", th.StringType),
+                th.Property("total", th.StringType),
+                th.Property("total_tax", th.StringType),
+                th.Property("taxes", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("total", th.StringType),
+                        th.Property("subtotal", th.StringType),
+                    )
+                )),
+                th.Property("meta_data", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("key", th.StringType),
+                        th.Property("value", th.StringType),
+                    )
+                )),
+                th.Property("sku", th.StringType),
+                th.Property("price", th.NumberType),
+            )
+        )),
+        th.Property("tax_lines", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("rate_code", th.StringType),
+                th.Property("rate_id", th.IntegerType),
+                th.Property("label", th.StringType),
+                th.Property("compound", th.BooleanType),
+                th.Property("tax_total", th.StringType),
+                th.Property("shipping_tax_total", th.StringType),
+                th.Property("meta_data", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("key", th.StringType),
+                        th.Property("value", th.StringType),
+                    )
+                )),
+            )
+        )),
+        th.Property("shipping_lines", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("method_title", th.StringType),
+                th.Property("method_id", th.StringType),
+                th.Property("total", th.StringType),
+                th.Property("total_tax", th.StringType),
+                th.Property("taxes", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("total", th.StringType),
+                        th.Property("subtotal", th.StringType),
+                    )
+                )),
+                th.Property("meta_data", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("key", th.StringType),
+                        th.Property("value", th.StringType),
+                    )
+                )),
+            )
+        )),
+        th.Property("fee_lines", th.ArrayType(
+            th.ObjectType(
+                th.Property("id", th.IntegerType),
+                th.Property("name", th.StringType),
+                th.Property("tax_class", th.StringType),
+                th.Property("tax_status", th.StringType),
+                th.Property("total", th.StringType),
+                th.Property("total_tax", th.StringType),
+                th.Property("taxes", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("total", th.StringType),
+                        th.Property("subtotal", th.StringType),
+                    )
+                )),
+                th.Property("meta_data", th.ArrayType(
+                    th.ObjectType(
+                        th.Property("id", th.IntegerType),
+                        th.Property("key", th.StringType),
+                        th.Property("value", th.StringType),
+                    )
+                )),
+            )
+        )),
+    ).to_dict()
+    
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row['order_id']  = context.get("order_id")
+        return row
