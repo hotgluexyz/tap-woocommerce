@@ -16,7 +16,7 @@ from tap_woocommerce.streams import (
     CustomersStream,
     StoreSettingsStream,
     OrderNotesStream,
-    RefundsStream
+    OrdersRefundsStream
 )
 
 STREAM_TYPES = [
@@ -28,7 +28,7 @@ STREAM_TYPES = [
     CustomersStream,
     StoreSettingsStream,
     OrderNotesStream,
-    RefundsStream
+    OrdersRefundsStream
 ]
 
 
