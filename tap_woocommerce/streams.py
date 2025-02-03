@@ -6,6 +6,17 @@ from typing import Any, Dict, Optional, Union, List, Iterable
 from tap_woocommerce.client import WooCommerceStream
 
 
+meta_data_property = th.Property(
+            "meta_data",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("id", th.IntegerType),
+                    th.Property("key", th.StringType),
+                    th.Property("value", th.CustomType({"type": ["string", "object", "array"]})),
+                )
+            ),
+        )
+
 class ProductsStream(WooCommerceStream):
     """Define custom stream."""
 
@@ -143,7 +154,7 @@ class ProductsStream(WooCommerceStream):
         th.Property("variations", th.ArrayType(th.IntegerType)),
         th.Property("grouped_products", th.ArrayType(th.IntegerType)),
         th.Property("menu_order", th.IntegerType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+        meta_data_property,
     ).to_dict()
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
@@ -160,6 +171,7 @@ class OrdersStream(WooCommerceStream):
     primary_keys = ["id"]
     replication_key = "date_modified"
 
+    
     meta_data_property = th.Property(
             "meta_data",
             th.ArrayType(
@@ -469,7 +481,7 @@ class ProductVarianceStream(WooCommerceStream):
       
     ))),
     th.Property("menu_order", th.IntegerType),
-    th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+    meta_data_property,
     th.Property("_links", th.ObjectType(
       th.Property("self", th.ArrayType(th.ObjectType(
         
@@ -542,13 +554,7 @@ class SubscriptionStream(WooCommerceStream):
         th.Property("date_completed", th.DateTimeType),
         th.Property("date_paid", th.DateTimeType),
         th.Property("number", th.StringType),
-        th.Property("meta_data", th.ArrayType(
-            th.ObjectType(
-                th.Property('id',th.NumberType),
-                th.Property('key',th.StringType),
-                th.Property('value',th.StringType)
-            )
-        )),
+        meta_data_property,
         th.Property('line_items',th.ArrayType(
             th.ObjectType(
                 th.Property('id',th.NumberType),
@@ -568,7 +574,7 @@ class SubscriptionStream(WooCommerceStream):
                         th.Property('subtotal',th.StringType),
                     )
                 )),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+                meta_data_property,
                 th.Property("sku", th.StringType),
                 th.Property("price", th.NumberType),
                 th.Property("parent_name", th.StringType),
@@ -584,7 +590,7 @@ class SubscriptionStream(WooCommerceStream):
                 th.Property('tax_total',th.StringType),
                 th.Property('shipping_tax_total ',th.StringType),
                 th.Property('rate_percent ',th.NumberType),
-                th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+                meta_data_property,
             )
         )),
         th.Property(
@@ -736,7 +742,7 @@ class CustomersStream(WooCommerceStream):
         ),
         th.Property('is_paying_customer',th.BooleanType),
         th.Property('avatar_url',th.StringType),
-        th.Property("meta_data", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+        meta_data_property,
         th.Property('_links',th.ObjectType(
             th.Property('self',th.ArrayType(
                 th.ObjectType(
@@ -814,13 +820,7 @@ class OrdersRefundsStream(WooCommerceStream):
         th.Property("reason", th.StringType),
         th.Property("refunded_by", th.IntegerType),
         th.Property("refunded_payment", th.BooleanType),
-        th.Property("meta_data", th.ArrayType(
-            th.ObjectType(
-                th.Property("id", th.IntegerType),
-                th.Property("key", th.StringType),
-                th.Property("value", th.StringType),
-            )
-        )),
+        meta_data_property,
         th.Property("line_items", th.ArrayType(
             th.ObjectType(
                 th.Property("id", th.IntegerType),
@@ -840,13 +840,7 @@ class OrdersRefundsStream(WooCommerceStream):
                         th.Property("subtotal", th.StringType),
                     )
                 )),
-                th.Property("meta_data", th.ArrayType(
-                    th.ObjectType(
-                        th.Property("id", th.IntegerType),
-                        th.Property("key", th.StringType),
-                        th.Property("value", th.StringType),
-                    )
-                )),
+                meta_data_property,
                 th.Property("sku", th.StringType),
                 th.Property("price", th.NumberType),
             )
@@ -860,13 +854,7 @@ class OrdersRefundsStream(WooCommerceStream):
                 th.Property("compound", th.BooleanType),
                 th.Property("tax_total", th.StringType),
                 th.Property("shipping_tax_total", th.StringType),
-                th.Property("meta_data", th.ArrayType(
-                    th.ObjectType(
-                        th.Property("id", th.IntegerType),
-                        th.Property("key", th.StringType),
-                        th.Property("value", th.StringType),
-                    )
-                )),
+                meta_data_property,
             )
         )),
         th.Property("shipping_lines", th.ArrayType(
@@ -883,13 +871,7 @@ class OrdersRefundsStream(WooCommerceStream):
                         th.Property("subtotal", th.StringType),
                     )
                 )),
-                th.Property("meta_data", th.ArrayType(
-                    th.ObjectType(
-                        th.Property("id", th.IntegerType),
-                        th.Property("key", th.StringType),
-                        th.Property("value", th.StringType),
-                    )
-                )),
+                meta_data_property,
             )
         )),
         th.Property("fee_lines", th.ArrayType(
@@ -907,13 +889,7 @@ class OrdersRefundsStream(WooCommerceStream):
                         th.Property("subtotal", th.StringType),
                     )
                 )),
-                th.Property("meta_data", th.ArrayType(
-                    th.ObjectType(
-                        th.Property("id", th.IntegerType),
-                        th.Property("key", th.StringType),
-                        th.Property("value", th.StringType),
-                    )
-                )),
+                meta_data_property,
             )
         )),
     ).to_dict()
