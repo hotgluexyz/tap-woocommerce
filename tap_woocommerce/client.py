@@ -172,6 +172,11 @@ class WooCommerceStream(RESTStream):
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response."""
+        content_type = response.headers.get("Content-Type", "").lower()
+        body = response.text
+        if "html" in content_type:
+            body = body.replace("\n", " ").replace("\r", " ")
+            
         if response.status_code == 401:
             raise FatalAPIError(
                 f"Unauthorized: {response.status_code} {response.reason} at {self.path}"
@@ -184,20 +189,20 @@ class WooCommerceStream(RESTStream):
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path} "
-                f"Response: {response.text}"
+                f"Response: {body}"
             )
             raise RetriableAPIError(msg)
         elif 400 <= response.status_code < 500:
             msg = (
                 f"{response.status_code} Client Error: "
                 f"{response.reason} for path: {self.path} "
-                f"Response: {response.text}"
+                f"Response: {body}"
             )
             raise FatalAPIError(msg)
         try:
             response.json()
         except:
-            raise RetriableAPIError(f"Invalid JSON: {response.text}")
+            raise RetriableAPIError(f"Invalid JSON: {body}")
 
     def request_decorator(self, func: Callable) -> Callable:
         """Instantiate a decorator for handling request failures."""
