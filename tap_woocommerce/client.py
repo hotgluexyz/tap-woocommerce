@@ -54,7 +54,7 @@ class WooCommerceStream(RESTStream):
             wc_version = float(wc_version)
         except:
             self.logger.info(f"Non numeric WooCommerce version: {original_wc_version}")
-            return False
+            return True
         
         if wc_version >= 5.6:
             return True
