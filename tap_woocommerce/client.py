@@ -45,9 +45,17 @@ class WooCommerceStream(RESTStream):
             return True
         if not result_dict.get("environment"):
             return True
-        wc_version = result_dict["environment"].get("version")
-        wc_version = ".".join(wc_version.split(".")[:-1])
-        wc_version = float(wc_version)
+        original_wc_version = result_dict["environment"].get("version")
+
+        if "." in original_wc_version:
+            wc_version = ".".join(original_wc_version.split(".")[:2])
+
+        try:
+            wc_version = float(wc_version)
+        except:
+            self.logger.info(f"Non numeric WooCommerce version: {original_wc_version}")
+            return True
+        
         if wc_version >= 5.6:
             return True
         return False
