@@ -897,3 +897,31 @@ class OrdersRefundsStream(WooCommerceStream):
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row['order_id']  = context.get("order_id")
         return row
+
+class ProductsReviewsStream(WooCommerceStream):
+    """Product reviews stream (wc/v3/products/reviews)."""
+
+    name = "product_reviews"
+    path = "products/reviews"
+    primary_keys = ["id"]
+
+    replication_key = "date_created_gmt"
+
+    schema = th.PropertiesList(
+        th.Property("product_name", th.StringType),
+        th.Property("product_permalink", th.StringType),
+        th.Property("id", th.IntegerType),
+        th.Property("date_created", th.DateTimeType),
+        th.Property("date_created_gmt", th.DateTimeType),
+        th.Property("product_id", th.IntegerType),
+        th.Property("status", th.StringType),
+        th.Property("reviewer", th.StringType),
+        th.Property("reviewer_email", th.StringType),
+        th.Property("review", th.StringType),
+        th.Property("rating", th.IntegerType),
+        th.Property("verified", th.BooleanType),
+        th.Property(
+            "reviewer_avatar_urls",
+            th.ObjectType(additional_properties=th.StringType),
+        ),
+    ).to_dict()
