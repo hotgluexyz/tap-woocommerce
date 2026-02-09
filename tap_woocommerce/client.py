@@ -197,6 +197,7 @@ class WooCommerceStream(RESTStream):
             msg = (
                 f"{response.status_code} Server Error: "
                 f"{response.reason} for path: {self.path} "
+                f"Full request url: {response.request.url} "
                 f"Response: {body}"
             )
             raise RetriableAPIError(msg)
