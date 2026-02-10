@@ -1,8 +1,6 @@
 """WooCommerce tap class."""
 
 from typing import List
-
-from pip import main
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
 
@@ -12,7 +10,7 @@ from tap_woocommerce.streams import (
     OrdersStream, 
     CouponsStream,
     ProductVarianceStream,
-    SubscriptionStream,
+    ProductsReviewsStream,
     CustomersStream,
     StoreSettingsStream,
     OrderNotesStream,
@@ -24,7 +22,7 @@ STREAM_TYPES = [
     OrdersStream,
     CouponsStream,
     ProductVarianceStream,
-    SubscriptionStream,
+    ProductsReviewsStream,
     CustomersStream,
     StoreSettingsStream,
     OrderNotesStream,
