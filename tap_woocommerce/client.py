@@ -4,17 +4,18 @@ import copy
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, Optional, cast, Callable
+from typing import Any, Dict, Iterable, Optional, Callable
 
 import backoff
 import requests
 from urllib3.exceptions import ProtocolError
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
-from singer_sdk.authenticators import BasicAuthenticator
-from singer_sdk.helpers.jsonpath import extract_jsonpath
-from singer_sdk.streams import RESTStream
-from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from hotglue_singer_sdk.authenticators import BasicAuthenticator
+from hotglue_singer_sdk.helpers.jsonpath import extract_jsonpath
+from hotglue_singer_sdk.streams import RESTStream
+from hotglue_singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from hotglue_singer_sdk.tap_base import InvalidCredentialsError
 from http.client import RemoteDisconnected
 from requests.exceptions import ChunkedEncodingError
 
@@ -106,7 +107,7 @@ class WooCommerceStream(RESTStream):
     ) -> Dict[str, Any]:
         """Return a dictionary of values to be used in URL parameterization."""
 
-        if self.new_version == None:
+        if self.new_version is None:
             self.new_version = self.get_wc_version()
 
         params: dict = {}
@@ -184,9 +185,9 @@ class WooCommerceStream(RESTStream):
         body = response.text
         if "html" in content_type:
             body = body.replace("\n", " ").replace("\r", " ")
-            
+
         if response.status_code == 401:
-            raise FatalAPIError(
+            raise InvalidCredentialsError(
                 f"Unauthorized: {response.status_code} {response.reason} at {self.path}"
             )
         if response.status_code >= 400 and self.config.get("ignore_server_errors"):
@@ -242,7 +243,7 @@ class WooCommerceStream(RESTStream):
         for key, value in row.items():
             if key == "meta_data":
                 for index, meta_data in enumerate(value):
-                    if not meta_data or type(meta_data["value"]) == str:
+                    if not meta_data or isinstance(meta_data["value"], str):
                         continue
                     elif meta_data["value"] is not None:
                         try:
@@ -251,15 +252,15 @@ class WooCommerceStream(RESTStream):
                             new_row[key][index]["value"] = str(meta_data["value"])
                     elif meta_data["value"] is None:
                         new_row[meta_data["key"]] = ""
-            elif type(value) == list and value:
+            elif isinstance(value, list) and value:
                 new_list = []
                 for item in value:
-                    if type(item) == dict:
+                    if isinstance(item, dict):
                         new_list.append(self.process_meta_data(item))
                     else:
                         new_list.append(item)
                 new_row[key] = new_list
-            elif type(value) == dict and any(type(v) == dict for v in value.values()):
+            elif isinstance(value, dict) and any(isinstance(v, dict) for v in value.values()):
                 new_row[key] = self.process_meta_data(value)
         return copy.deepcopy(new_row)
 

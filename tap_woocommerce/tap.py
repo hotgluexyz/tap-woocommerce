@@ -2,12 +2,11 @@
 
 from typing import List
 
-from pip import main
-from singer_sdk import Stream, Tap
-from singer_sdk import typing as th  # JSON schema typing helpers
+from hotglue_singer_sdk import Stream, Tap
+from hotglue_singer_sdk import typing as th  # JSON schema typing helpers
+from hotglue_singer_sdk.helpers.capabilities import AlertingLevel
 
 from tap_woocommerce.streams import (
-    WooCommerceStream, 
     ProductsStream, 
     OrdersStream, 
     CouponsStream,
@@ -35,6 +34,7 @@ STREAM_TYPES = [
 class TapWooCommerce(Tap):
     """WooCommerce tap class."""
     name = "tap-woocommerce"
+    alerting_level = AlertingLevel.WARNING
 
     config_jsonschema = th.PropertiesList(
         th.Property("consumer_key", th.StringType, required=True),
