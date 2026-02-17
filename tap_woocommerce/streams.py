@@ -1,7 +1,7 @@
 """Stream type classes for tap-woocommerce."""
 
-from singer_sdk import typing as th  # JSON Schema typing helpers
-from typing import Any, Dict, Optional, Union, List, Iterable
+from hotglue_singer_sdk import typing as th  # JSON Schema typing helpers
+from typing import Optional
 
 from tap_woocommerce.client import WooCommerceStream
 
