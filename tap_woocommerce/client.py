@@ -14,7 +14,7 @@ from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
 from hotglue_singer_sdk.authenticators import BasicAuthenticator
 from hotglue_singer_sdk.helpers.jsonpath import extract_jsonpath
 from hotglue_singer_sdk.streams import RESTStream
-from hotglue_singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from hotglue_singer_sdk.exceptions import RetriableAPIError
 from hotglue_singer_sdk.tap_base import InvalidCredentialsError
 from http.client import RemoteDisconnected
 from requests.exceptions import ChunkedEncodingError
