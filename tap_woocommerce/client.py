@@ -21,6 +21,8 @@ from requests.exceptions import ChunkedEncodingError
 
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
+class RetriableInvalidCredentialsError(RetriableAPIError, InvalidCredentialsError):
+    pass
 
 class WooCommerceStream(RESTStream):
     """WooCommerce stream class."""
@@ -201,14 +203,14 @@ class WooCommerceStream(RESTStream):
                 f"Full request url: {response.request.url} "
                 f"Response: {body}"
             )
-            raise RetriableAPIError(msg)
+            raise RetriableInvalidCredentialsError(msg)
         elif 400 <= response.status_code < 500:
             msg = (
                 f"{response.status_code} Client Error: "
                 f"{response.reason} for path: {self.path} "
                 f"Response: {body}"
             )
-            raise FatalAPIError(msg)
+            raise InvalidCredentialsError(msg)
         try:
             response.json()
         except:
