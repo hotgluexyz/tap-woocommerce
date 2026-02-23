@@ -14,13 +14,15 @@ from random_user_agent.params import SoftwareName, OperatingSystem, Popularity
 from hotglue_singer_sdk.authenticators import BasicAuthenticator
 from hotglue_singer_sdk.helpers.jsonpath import extract_jsonpath
 from hotglue_singer_sdk.streams import RESTStream
-from hotglue_singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from hotglue_singer_sdk.exceptions import RetriableAPIError
 from hotglue_singer_sdk.tap_base import InvalidCredentialsError
 from http.client import RemoteDisconnected
 from requests.exceptions import ChunkedEncodingError
 
 logging.getLogger("backoff").setLevel(logging.CRITICAL)
 
+class RetriableInvalidCredentialsError(RetriableAPIError, InvalidCredentialsError):
+    pass
 
 class WooCommerceStream(RESTStream):
     """WooCommerce stream class."""
@@ -201,14 +203,14 @@ class WooCommerceStream(RESTStream):
                 f"Full request url: {response.request.url} "
                 f"Response: {body}"
             )
-            raise RetriableAPIError(msg)
+            raise RetriableInvalidCredentialsError(msg)
         elif 400 <= response.status_code < 500:
             msg = (
                 f"{response.status_code} Client Error: "
                 f"{response.reason} for path: {self.path} "
                 f"Response: {body}"
             )
-            raise FatalAPIError(msg)
+            raise InvalidCredentialsError(msg)
         try:
             response.json()
         except:
