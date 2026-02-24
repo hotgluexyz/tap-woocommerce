@@ -34,7 +34,7 @@ STREAM_TYPES = [
 class TapWooCommerce(Tap):
     """WooCommerce tap class."""
     name = "tap-woocommerce"
-    alerting_level = AlertingLevel.ERROR
+    alerting_level = AlertingLevel.WARNING
 
     config_jsonschema = th.PropertiesList(
         th.Property("consumer_key", th.StringType, required=True),
