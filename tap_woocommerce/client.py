@@ -42,7 +42,7 @@ class WooCommerceStream(RESTStream):
         headers = self.http_headers
         headers.update(self.authenticator.auth_headers or {})
         try:
-            result = self.requests_session.get(url=status_url, headers=headers)
+            result = self.requests_session.get(url=status_url, headers=headers, timeout=self.timeout)
             result_dict = result.json()
         except:
             return True
