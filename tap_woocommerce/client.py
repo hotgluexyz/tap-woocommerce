@@ -228,7 +228,7 @@ class WooCommerceStream(RESTStream):
                 RemoteDisconnected,
                 ChunkedEncodingError
             ),
-            max_tries=2,
+            max_tries=10,
             factor=4,
             on_backoff=self.backoff_handler,
         )(func)
