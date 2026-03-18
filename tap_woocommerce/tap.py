@@ -5,6 +5,9 @@ from typing import List
 from hotglue_singer_sdk import Stream, Tap
 from hotglue_singer_sdk import typing as th  # JSON schema typing helpers
 from hotglue_singer_sdk.helpers.capabilities import AlertingLevel
+from hotglue_etl_exceptions import InvalidCredentialsError
+from hotglue_singer_sdk.exceptions import FatalAPIError
+import requests
 
 from tap_woocommerce.streams import (
     ProductsStream, 
@@ -34,7 +37,14 @@ STREAM_TYPES = [
 class TapWooCommerce(Tap):
     """WooCommerce tap class."""
     name = "tap-woocommerce"
-    alerting_level = AlertingLevel.WARNING
+    alerting_level = AlertingLevel.ERROR
+
+    exception_alerting_level_map = {
+        InvalidCredentialsError: AlertingLevel.NONE,
+        FatalAPIError: AlertingLevel.NONE,
+        requests.exceptions.RequestException: AlertingLevel.NONE,
+    }
+
 
     config_jsonschema = th.PropertiesList(
         th.Property("consumer_key", th.StringType, required=True),
