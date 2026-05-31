@@ -6,7 +6,7 @@ from hotglue_singer_sdk import Stream, Tap
 from hotglue_singer_sdk import typing as th  # JSON schema typing helpers
 from hotglue_singer_sdk.helpers.capabilities import AlertingLevel
 from hotglue_etl_exceptions import InvalidCredentialsError
-from hotglue_singer_sdk.exceptions import FatalAPIError
+from hotglue_singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 import requests
 
 from tap_woocommerce.streams import (
@@ -42,6 +42,7 @@ class TapWooCommerce(Tap):
     exception_alerting_level_map = {
         InvalidCredentialsError: AlertingLevel.NONE,
         FatalAPIError: AlertingLevel.NONE,
+        RetriableAPIError: AlertingLevel.NONE,
         requests.exceptions.RequestException: AlertingLevel.NONE,
     }
 
