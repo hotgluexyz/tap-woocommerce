@@ -128,6 +128,19 @@ class WooCommerceStream(RESTStream):
                 params["after"] = (self.start_date - timedelta(days=lookup_days)).isoformat()
         return params
 
+    def get_estimated_record_count(self) -> Optional[int]:
+        if (self.name == "products" and self.config.get("sync_products", True) is False):
+            return 0 
+
+        prepared_request = self.prepare_request(context=None, next_page_token=None)
+        if not self.new_version:
+            return None
+        response = self.request_decorator(self._request)(prepared_request, {})
+        
+        if self.name == "store_settings":
+            return len(response.json())
+        return int(response.headers["X-WP-Total"])
+
     def _request(
         self, prepared_request: requests.PreparedRequest, context: Optional[dict]
     ) -> requests.Response:
