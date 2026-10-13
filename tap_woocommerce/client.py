@@ -137,7 +137,7 @@ class WooCommerceStream(RESTStream):
             return None
         response = self.request_decorator(self._request)(prepared_request, {})
         
-        if "X-WP-Total" not in response.headers:
+        if self.name in ("store_settings", "shipping_zones"):
             return len(response.json())
         return int(response.headers["X-WP-Total"])
 
