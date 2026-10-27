@@ -897,3 +897,100 @@ class OrdersRefundsStream(WooCommerceStream):
     def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row['order_id']  = context.get("order_id")
         return row
+
+class ProductCategoriesStream(WooCommerceStream):
+    """Define product categories stream."""
+
+    name = "product_categories"
+    path = "products/categories"
+    primary_keys = ["id"]
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("slug", th.StringType),
+        th.Property("parent", th.IntegerType),
+        th.Property("description", th.StringType),
+        th.Property("display", th.StringType),
+        th.Property("image", th.ObjectType(
+            th.Property("id", th.IntegerType),
+            th.Property("date_created", th.DateTimeType),
+            th.Property("date_created_gmt", th.DateTimeType),
+            th.Property("date_modified", th.DateTimeType),
+            th.Property("date_modified_gmt", th.DateTimeType),
+            th.Property("src", th.StringType),
+            th.Property("name", th.StringType),
+            th.Property("alt", th.StringType),
+        )),
+        th.Property("menu_order", th.IntegerType),
+        th.Property("count", th.IntegerType),
+    ).to_dict()
+
+class ProductShippingClassesStream(WooCommerceStream):
+    """Define product shipping classes stream."""
+
+    name = "product_shipping_classes"
+    path = "products/shipping_classes"
+    primary_keys = ["id"]
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("slug", th.StringType),
+        th.Property("description", th.StringType),
+        th.Property("count", th.IntegerType),
+    ).to_dict()
+
+class ShippingZonesStream(WooCommerceStream):
+    """Define shipping zones stream."""
+
+    name = "shipping_zones"
+    path = "shipping/zones"
+    primary_keys = ["id"]
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("order", th.IntegerType),
+    ).to_dict()
+
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        """Return a context dictionary for child streams."""
+        return {"zone_id": record["id"]}
+
+class ShippingZoneLocationsStream(WooCommerceStream):
+    """Define shipping zone locations stream."""
+
+    name = "shipping_zone_locations"
+    path = "shipping/zones/{zone_id}/locations"
+    primary_keys = ["zone_id", "code", "type"]
+    parent_stream_type = ShippingZonesStream
+    schema = th.PropertiesList(
+        th.Property("zone_id", th.IntegerType),
+        th.Property("code", th.StringType),
+        th.Property("type", th.StringType),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["zone_id"] = context["zone_id"]
+        return row
+
+class ShippingZoneMethodsStream(WooCommerceStream):
+    """Define shipping zone methods stream."""
+
+    name = "shipping_zone_methods"
+    path = "shipping/zones/{zone_id}/methods"
+    primary_keys = ["instance_id"]
+    parent_stream_type = ShippingZonesStream
+    schema = th.PropertiesList(
+        th.Property("instance_id", th.IntegerType),
+        th.Property("zone_id", th.IntegerType),
+        th.Property("title", th.StringType),
+        th.Property("order", th.IntegerType),
+        th.Property("enabled", th.BooleanType),
+        th.Property("method_id", th.StringType),
+        th.Property("method_title", th.StringType),
+        th.Property("method_description", th.StringType),
+        th.Property("settings", th.CustomType({"type": ["object", "array"]})),
+    ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
+        row["zone_id"] = context["zone_id"]
+        return row
